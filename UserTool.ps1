@@ -51,10 +51,10 @@ function Get_UserList {
     if (!$lastname) {
         $lastname = "*"
     }
+    #print list of each entry in Active Directory based on the above search parameters
     foreach ($userList in (Get-ADUser -Filter { (givenname -like $firstname -and surname -like $lastname) })) {
         $menuArray += , $userList
-        Write-host "$userCounter. $($menuArray[$userCounter-1].givenname); $($menuArray[$userCounter-1].surname)"
-        #Write-Host "$userCounter. $($userList[$userCounter-1].SamAccountName); $($userList[$userCounter-1].givenname) $($userList[$userCounter-1].surname)"
+        Write-host "$userCounter. $($menuArray[$userCounter-1].givenname) $($menuArray[$userCounter-1].surname), $($menuArray[$userCounter-1].SamAccountName)"
         $userCounter++
     }
 
