@@ -30,7 +30,8 @@ function Set-RandomADPassword {
         $password = -join (48..57 + 65..90 + 97..122 | Get-Random -Count $Length | ForEach-Object{[char]$_})
         $secpasswd = ConvertTo-SecureString $password -AsPlainText -Force
         Write-Output "Temp password set to: $password"
-        Set-ADAccountPassword -Identity $Username -NewPassword $secpasswd
+        Set-ADAccountPassword -Identity $Username -Reset -NewPassword $secpasswd
+        Set-Aduser -Identity $Username -ChangePasswordAtLogon $true
         Write-Host "Password changed successfully for user: $Username"
     } catch {
         Write-Host "Error changing password for user: $Username" -ForegroundColor Red
