@@ -20,6 +20,14 @@ function Check_UserLockoutStatus($username) {
     }
 }
 
+function Group_Counter($username) {
+    $groups = Get-ADPrincipalGroupMembership -Identity $username
+    $groupcount = ($groups | Measure-Object).Count
+    Write-Output $groups | Select-Object Name | Format-Table
+    Write-Output "$username is in $groupcount groups."
+    
+}
+
 function Set-RandomADPassword {
     param(
         [Parameter(Mandatory=$true)]
@@ -90,7 +98,7 @@ while ($loop) {
     Write-Host "1. Print user details"
     Write-Host "2. Print all user properties"
     Write-Host "3. Check user lockout status on all domain controllers"
-    Write-Host "4. Show user group memberships"
+    Write-Host "4. Show user group count and memberships"
     Write-Host "5. Unlock user account"
     Write-Host "6. Set a new temp password for user"
     Write-Host "7. Select a new user account"
@@ -110,7 +118,8 @@ while ($loop) {
             Check_UserLockoutStatus $user.SamAccountName
         }
         4 {
-            Get-ADPrincipalGroupMembership $user.SamAccountName | Select-Object name | Format-Table
+            Group_Counter $user.SamAccountName
+            #Get-ADPrincipalGroupMembership $user.SamAccountName | Select-Object name | Format-Table
         }
         5 {
             Unlock-ADAccount -Identity $user.SamAccountName
