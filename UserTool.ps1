@@ -25,7 +25,6 @@ function Group_Counter($username) {
     $groupcount = ($groups | Measure-Object).Count
     Write-Output $groups | Select-Object Name | Format-Table
     Write-Output "$username is in $groupcount groups."
-    
 }
 
 function Set-RandomADPassword {
@@ -119,7 +118,6 @@ while ($loop) {
         }
         4 {
             Group_Counter $user.SamAccountName
-            #Get-ADPrincipalGroupMembership $user.SamAccountName | Select-Object name | Format-Table
         }
         5 {
             Unlock-ADAccount -Identity $user.SamAccountName
