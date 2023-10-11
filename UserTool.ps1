@@ -20,6 +20,17 @@ function Check_UserLockoutStatus($username) {
     }
 }
 
+function Compare_ADGroupMembership($username) {
+    $groups = Get-ADPrincipalGroupMembership -Identity $username | Select-Object Name
+
+    $user_to_compare = Read-Host "`nEnter username of user to compare against"
+
+    $to_compare_groups = Get-ADPrincipalGroupMembership -Identity $user_to_compare | Select-Object Name
+    Write-Output "<= groups are assigned to $username.  => groups are assigned to $user_to_compare.  == groups are assigned to both users."
+    $output = Compare-Object -ReferenceObject $groups -DifferenceObject $to_compare_groups -Property Name -IncludeEqual | Out-String
+    return $output
+}
+
 function Group_Counter($username) {
     $groups = Get-ADPrincipalGroupMembership -Identity $username
     $groupcount = ($groups | Measure-Object).Count
@@ -29,18 +40,19 @@ function Group_Counter($username) {
 
 function Set-RandomADPassword {
     param(
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [string]$Username,
         [int]$Length = 15
     )
     try {
-        $password = -join (48..57 + 65..90 + 97..122 | Get-Random -Count $Length | ForEach-Object{[char]$_})
+        $password = -join (48..57 + 65..90 + 97..122 | Get-Random -Count $Length | ForEach-Object { [char]$_ })
         $secpasswd = ConvertTo-SecureString $password -AsPlainText -Force
         Write-Output "Temp password set to: $password"
         Set-ADAccountPassword -Identity $Username -Reset -NewPassword $secpasswd
         Set-Aduser -Identity $Username -ChangePasswordAtLogon $true
         Write-Host "Password changed successfully for user: $Username"
-    } catch {
+    }
+    catch {
         Write-Host "Error changing password for user: $Username" -ForegroundColor Red
         Write-Error $_
     }
@@ -98,10 +110,11 @@ while ($loop) {
     Write-Host "2. Print all user properties"
     Write-Host "3. Check user lockout status on all domain controllers"
     Write-Host "4. Show user group count and memberships"
-    Write-Host "5. Unlock user account"
-    Write-Host "6. Set a new temp password for user"
-    Write-Host "7. Select a new user account"
-    Write-Host "8. Exit"
+    Write-Host "5. Compare user group memberships"
+    Write-Host "6. Unlock user account"
+    Write-Host "7. Set a new temp password for user"
+    Write-Host "8. Select a new user account"
+    Write-Host "9. Exit"
 
     
     [int]$selection = Read-Host "`n Enter your selection"
@@ -120,16 +133,20 @@ while ($loop) {
             Group_Counter $user.SamAccountName
         }
         5 {
+            $comparison = Compare_ADGroupMembership $user.SamAccountName
+            Write-Host $comparison
+        }
+        6 {
             Unlock-ADAccount -Identity $user.SamAccountName
             Write-Host "$user should now be unlocked"
         }
-        6 {
+        7 {
             Set-RandomADPassword $user
         }
-        7 {
+        8 {
             $user = Get_UserList
         }
-        8 {
+        9 {
             Write-Host "`nFare thee well..."
             $loop = $false
             break
