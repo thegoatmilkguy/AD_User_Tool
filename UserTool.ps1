@@ -7,15 +7,21 @@ function Check_UserLockoutStatus($username) {
     # Iterate through the list of domain controllers
     foreach ($dc in $domainControllers) {
         # Get the user object for the specified username
-        $user = Get-ADUser -Identity $username -Server $dc.Name
+        try {
+            $user = Get-ADUser -Identity $username -Server $dc.Name -Properties LockedOut
+        }
+        catch {
+            Write-Host "$($dc.Name) is unreachable at this time." -ForegroundColor Red
+        }        
+
         # Check the LockoutTime attribute
-        if (!$user.LockoutTime) {
-            # User is not locked out on this domain controller
-            Write-Output "$username is not locked out on domain controller $($dc.Name)."
+        if ($user.LockedOut) {
+            # User is locked out on this domain controller
+            Write-Host "$username is locked out on domain controller $($dc.Name)." -ForegroundColor Red
         }
         else {
-            # User is locked out on this domain controller
-            Write-Output "$username is locked out on domain controller $($dc.Name)."
+            # User is not locked out on this domain controller
+            Write-Host "$username is not locked out on domain controller $($dc.Name)." -ForegroundColor Green
         }
     }
 }
