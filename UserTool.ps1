@@ -11,7 +11,7 @@ function Check_UserLockoutStatus($username) {
             $user = Get-ADUser -Identity $username -Server $dc.Name -Properties LockedOut
         }
         catch {
-            Write-Host "$($dc.Name) is unreachable at this time." -ForegroundColor Red
+            Write-Host "$($dc.Name) is unreachable at this time." -ForegroundColor Yellow
         }        
 
         # Check the LockoutTime attribute
