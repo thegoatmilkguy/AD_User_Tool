@@ -27,18 +27,19 @@ function Check_UserLockoutStatus($username) {
 }
 
 function Compare_ADGroupMembership($username) {
-    $groups = Get-ADPrincipalGroupMembership -Identity $username | Select-Object Name
+    #$groups = Get-ADPrincipalGroupMembership -Identity $username | Select-Object Name
+    $groups = Get-ADUser -Identity $username -Properties MemberOf | Select-Object -ExpandProperty MemberOf | Get-ADGroup | Select-Object Name
 
     $user_to_compare = Read-Host "`nEnter username of user to compare against"
 
-    $to_compare_groups = Get-ADPrincipalGroupMembership -Identity $user_to_compare | Select-Object Name
+    $to_compare_groups = Get-ADUser -Identity $user_to_compare -Properties MemberOf | Select-Object -ExpandProperty MemberOf | Get-ADGroup | Select-Object Name
     Write-Output "<= groups are assigned to $username.  => groups are assigned to $user_to_compare.  == groups are assigned to both users."
     $output = Compare-Object -ReferenceObject $groups -DifferenceObject $to_compare_groups -Property Name -IncludeEqual | Out-String
     return $output
 }
 
 function Group_Counter($username) {
-    $groups = Get-ADPrincipalGroupMembership -Identity $username
+    $groups = Get-ADUser -Identity $username -Properties MemberOf | Select-Object -ExpandProperty MemberOf | Get-ADGroup | Select-Object Name
     $groupcount = ($groups | Measure-Object).Count
     Write-Output $groups | Select-Object Name | Format-Table
     Write-Output "$username is in $groupcount groups."
