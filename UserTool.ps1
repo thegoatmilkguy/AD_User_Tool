@@ -51,6 +51,12 @@ function Set-RandomADPassword {
         [string]$Username,
         [int]$Length = 15
     )
+    Write-Host "Are you sure you want to set a new temp password for $($user.SamAccountName)? (Y/N)"
+    $confirmation = Read-Host
+    if ($confirmation -ne 'Y' -and $confirmation -ne 'y') {
+        Write-Host "Operation cancelled." -ForegroundColor Yellow
+        return
+    }
     try {
         $password = -join (48..57 + 65..90 + 97..122 | Get-Random -Count $Length | ForEach-Object { [char]$_ })
         $secpasswd = ConvertTo-SecureString $password -AsPlainText -Force
